@@ -1,0 +1,6 @@
+[package]
+name = "vlq"
+version = "0.1.0"
+authors = ["Tom Tromey <tom@tromey.com>"]
+
+[dependencies]
