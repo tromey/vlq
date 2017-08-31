@@ -68,6 +68,7 @@ pub fn decode(input: &mut io::Read) -> Result<i64> {
 
 // Encode a single base64 digit.
 fn encode64(value: u8) -> u8 {
+    debug_assert!(value < 64);
     if value < 26 {
         value + b'A'
     } else if value < 52 {
