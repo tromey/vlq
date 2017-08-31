@@ -19,8 +19,6 @@ pub enum Error {
     InvalidBase64,
     /// An I/O error occurred while reading.
     IOError(io::Error),
-    /// There were not enough input bytes.
-    UnexpectedEof,
 }
 
 impl From<io::Error> for Error {
