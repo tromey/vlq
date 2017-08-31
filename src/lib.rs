@@ -49,8 +49,8 @@ pub fn decode(input: &mut io::Read) -> Result<i64> {
     let mut keep_going = true;
     while keep_going {
         let mut byte = [0; 1];
-        try!(input.read_exact(&mut byte[..]));
-        let digit = try!(decode64(byte[0]));
+        input.read_exact(&mut byte[..])?;
+        let digit = decode64(byte[0])?;
         keep_going = (digit & CONTINUED) != 0;
         accum += ((digit & MASK) as u64) << shift;
         shift += SHIFT;
@@ -96,7 +96,7 @@ pub fn encode(value: i64, output: &mut io::Write) -> io::Result<()> {
             digit |= CONTINUED;
         }
         let bytes = [encode64(digit)];
-        try!(output.write_all(&bytes[..]));
+        output.write_all(&bytes[..])?;
         if value == 0 {
             break;
         }
