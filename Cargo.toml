@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Tom Tromey <tom@tromey.com>"]
 
 description = "Sourcemap-style VLQ encoder and decoder"
-documentation = ""
+# Not done yet.
+documentation = "https://github.com/tromey/vlq"
 readme = "README.md"
 keywords = ["vlq", "sourcemap"]
 repository = "https://github.com/tromey/vlq"
