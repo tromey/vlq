@@ -14,6 +14,7 @@ const MASK: u8 = (1 << SHIFT) - 1;
 const CONTINUED: u8 = 1 << SHIFT;
 
 /// An error that occurred while decoding.
+#[derive(Debug)]
 pub enum Error {
     /// The input contained an invalid byte.
     InvalidBase64,
