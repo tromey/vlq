@@ -3,4 +3,11 @@ name = "vlq"
 version = "0.1.0"
 authors = ["Tom Tromey <tom@tromey.com>"]
 
+description = "Sourcemap-style VLQ encoder and decoder"
+documentation = ""
+readme = "README.md"
+keywords = ["vlq", "sourcemap"]
+repository = "https://github.com/tromey/vlq"
+license = "Apache-2.0/MIT"
+
 [dependencies]
