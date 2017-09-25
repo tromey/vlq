@@ -25,6 +25,7 @@ fn main() {
         println!("================\nLine {}", line);
 
         if group.is_empty() {
+            line += 1;
             continue;
         }
 
