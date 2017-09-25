@@ -17,7 +17,7 @@ const CONTINUED: u8 = 1 << SHIFT;
 #[derive(Debug)]
 pub enum Error {
     /// The input contained an invalid byte.
-    InvalidBase64,
+    InvalidBase64(u8),
     /// An I/O error occurred while reading.
     IOError(io::Error),
 }
@@ -38,8 +38,8 @@ fn decode64(input: u8) -> Result<u8> {
         b'a'...b'z' => Ok(input - b'a' + 26),
         b'0'...b'9' => Ok(input - b'0' + 52),
         b'+' => Ok(62),
-        b'-' => Ok(63),
-        _ => Err(Error::InvalidBase64)
+        b'/' => Ok(63),
+        _ => Err(Error::InvalidBase64(input))
     }
 }
 
@@ -80,7 +80,7 @@ fn encode64(value: u8) -> u8 {
         b'+'
     } else {
         assert!(value == 63);
-        b'-'
+        b'/'
     }
 }
 

@@ -2,10 +2,19 @@ extern crate vlq;
 
 use std::env;
 use std::io::Read;
+use std::io::stdin;
 use vlq::decode;
 
 fn main() {
-    let arg = env::args().nth(1).unwrap();
+    let arg = if env::args().count() > 1 {
+        env::args().nth(1).unwrap()
+    } else {
+        let mut input = String::new();
+        match stdin().read_line(&mut input) {
+            Ok(_) => input,
+            Err(error) => panic!("error: {}", error),
+        }
+    };
     let mut line = 0;
     let mut orig_line = 0;
     let mut orig_column = 0;
@@ -14,6 +23,10 @@ fn main() {
 
     for group in arg.split(';') {
         println!("================\nLine {}", line);
+
+        if group.is_empty() {
+            continue;
+        }
 
         let mut column = 0;
         for segment in group.split(',') {
