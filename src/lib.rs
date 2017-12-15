@@ -40,7 +40,7 @@ fn decode64(input: u8) -> Result<u8> {
         b'0'...b'9' => Ok(input - b'0' + 52),
         b'+' => Ok(62),
         b'/' => Ok(63),
-        _ => Err(Error::InvalidBase64(input))
+        _ => Err(Error::InvalidBase64(input)),
     }
 }
 
@@ -121,8 +121,8 @@ mod tests {
             Ok(x) => {
                 assert_eq!(x, expect);
                 assert_eq!(cursor.position(), input.len() as u64);
-            },
-            _ => assert!(false)
+            }
+            _ => assert!(false),
         }
     }
 
@@ -140,7 +140,7 @@ mod tests {
             let mut buf = Vec::<u8>::new();
             match ::encode(val, &mut buf) {
                 Ok(()) => assert!(buf.len() > 0),
-                _ => assert!(false)
+                _ => assert!(false),
             }
             decode_tester_ok(&buf, val);
         }
