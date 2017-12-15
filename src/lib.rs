@@ -5,6 +5,7 @@
 //! maps](https://github.com/mozilla/source-map).
 
 #![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
 
 use std::io;
 
@@ -16,16 +17,10 @@ const CONTINUED: u8 = 1 << SHIFT;
 /// An error that occurred while decoding.
 #[derive(Debug)]
 pub enum Error {
+    /// Unexpectedly hit EOF.
+    UnexpectedEof,
     /// The input contained an invalid byte.
     InvalidBase64(u8),
-    /// An I/O error occurred while reading.
-    IOError(io::Error),
-}
-
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Error {
-        Error::IOError(e)
-    }
 }
 
 /// The result of decoding.
@@ -39,19 +34,21 @@ fn decode64(input: u8) -> Result<u8> {
         b'0'...b'9' => Ok(input - b'0' + 52),
         b'+' => Ok(62),
         b'/' => Ok(63),
-        _ => Err(Error::InvalidBase64(input))
+        _ => Err(Error::InvalidBase64(input)),
     }
 }
 
 /// Decode a single VLQ value from the input, returning the value.
-pub fn decode(input: &mut io::Read) -> Result<i64> {
+pub fn decode<B>(input: &mut B) -> Result<i64>
+where
+    B: Iterator<Item = u8>,
+{
     let mut accum = 0;
     let mut shift = 0;
     let mut keep_going = true;
     while keep_going {
-        let mut byte = [0; 1];
-        input.read_exact(&mut byte[..])?;
-        let digit = decode64(byte[0])?;
+        let byte = input.next().ok_or(Error::UnexpectedEof)?;
+        let digit = decode64(byte)?;
         keep_going = (digit & CONTINUED) != 0;
         accum += ((digit & MASK) as u64) << shift;
         shift += SHIFT;
@@ -85,7 +82,10 @@ fn encode64(value: u8) -> u8 {
 }
 
 /// Encode a value as Base64 VLQ, sending it to the writer.
-pub fn encode(value: i64, output: &mut io::Write) -> io::Result<()> {
+pub fn encode<W>(value: i64, output: &mut W) -> io::Result<()>
+where
+    W: io::Write,
+{
     let signed = value < 0;
     let mut value = (value.wrapping_abs() as u64) << 1;
     if signed {
@@ -109,13 +109,13 @@ pub fn encode(value: i64, output: &mut io::Write) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     fn decode_tester_ok(input: &[u8], expect: i64) {
-        let mut cursor = ::io::Cursor::new(input);
-        match ::decode(&mut cursor) {
+        let mut input = input.iter().cloned();
+        match ::decode(&mut input) {
             Ok(x) => {
                 assert_eq!(x, expect);
-                assert_eq!(cursor.position(), input.len() as u64);
-            },
-            _ => assert!(false)
+                assert!(input.next().is_none());
+            }
+            _ => assert!(false),
         }
     }
 
@@ -133,7 +133,7 @@ mod tests {
             let mut buf = Vec::<u8>::new();
             match ::encode(val, &mut buf) {
                 Ok(()) => assert!(buf.len() > 0),
-                _ => assert!(false)
+                _ => assert!(false),
             }
             decode_tester_ok(&buf, val);
         }
