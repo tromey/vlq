@@ -5,6 +5,7 @@
 //! maps](https://github.com/mozilla/source-map).
 
 #![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
 
 use std::io;
 
