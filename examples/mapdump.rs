@@ -1,7 +1,6 @@
 extern crate vlq;
 
 use std::env;
-use std::io::Read;
 use std::io::stdin;
 use vlq::decode;
 
@@ -33,7 +32,7 @@ fn main() {
         for segment in group.split(',') {
             let bytes = segment.as_bytes();
             let mut slice = &bytes[..];
-            let input: &mut Read = &mut slice;
+            let input = &mut slice;
 
             let col_delta = decode(input).expect("column needed");
             column += col_delta;
@@ -70,4 +69,3 @@ fn main() {
         line += 1;
     }
 }
-

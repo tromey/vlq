@@ -45,7 +45,10 @@ fn decode64(input: u8) -> Result<u8> {
 }
 
 /// Decode a single VLQ value from the input, returning the value.
-pub fn decode(input: &mut io::Read) -> Result<i64> {
+pub fn decode<R>(input: &mut R) -> Result<i64>
+where
+    R: io::Read,
+{
     let mut accum = 0;
     let mut shift = 0;
     let mut keep_going = true;
@@ -86,7 +89,10 @@ fn encode64(value: u8) -> u8 {
 }
 
 /// Encode a value as Base64 VLQ, sending it to the writer.
-pub fn encode(value: i64, output: &mut io::Write) -> io::Result<()> {
+pub fn encode<W>(value: i64, output: &mut W) -> io::Result<()>
+where
+    W: io::Write,
+{
     let signed = value < 0;
     let mut value = (value.wrapping_abs() as u64) << 1;
     if signed {
