@@ -30,29 +30,27 @@ fn main() {
 
         let mut column = 0;
         for segment in group.split(',') {
-            let bytes = segment.as_bytes();
-            let mut slice = &bytes[..];
-            let input = &mut slice;
+            let mut input = segment.as_bytes().iter().cloned();
 
-            let col_delta = decode(input).expect("column needed");
+            let col_delta = decode(input.by_ref()).expect("column needed");
             column += col_delta;
             println!("   column {}", column);
 
-            match decode(input) {
+            match decode(input.by_ref()) {
                 Err(_) => {}
                 Ok(s) => {
                     source_number += s;
                     println!("   source #{}", source_number);
 
-                    let line_delta = decode(input).unwrap();
+                    let line_delta = decode(input.by_ref()).unwrap();
                     orig_line += line_delta;
                     println!("   orig line {}", orig_line);
 
-                    let col_delta = decode(input).unwrap();
+                    let col_delta = decode(input.by_ref()).unwrap();
                     orig_column += col_delta;
                     println!("   orig column {}", orig_column);
 
-                    match decode(input) {
+                    match decode(input.by_ref()) {
                         Err(_) => {},
                         Ok(n) => {
                             name_number += n;
