@@ -1,11 +1,10 @@
 [package]
 name = "vlq"
-version = "0.3.0"
-authors = ["Tom Tromey <tom@tromey.com>"]
+version = "0.4.0"
+authors = ["Tom Tromey <tom@tromey.com>", "Nick Fitzgerald <fitzgen@gmail.com>"]
 
 description = "Sourcemap-style VLQ encoder and decoder"
-# Not done yet.
-documentation = "https://github.com/tromey/vlq"
+documentation = "https://docs.rs/vlq/"
 readme = "README.md"
 keywords = ["vlq", "sourcemap"]
 repository = "https://github.com/tromey/vlq"
