@@ -138,4 +138,12 @@ mod tests {
             decode_tester_ok(&buf, val);
         }
     }
+
+    #[test]
+    fn test_simple_roundtrip() {
+        for val in 0..64 {
+            // Don't crash, and decoding is an identity.
+            assert_eq!(val, super::decode64(super::encode64(val)).unwrap());
+        }
+    }
 }
