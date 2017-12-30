@@ -21,6 +21,8 @@ pub enum Error {
     UnexpectedEof,
     /// The input contained an invalid byte.
     InvalidBase64(u8),
+    /// The input encoded a number that didn't fit into i64.
+    Overflow,
 }
 
 /// The result of decoding.
@@ -50,7 +52,14 @@ where
         let byte = input.next().ok_or(Error::UnexpectedEof)?;
         let digit = decode64(byte)?;
         keep_going = (digit & CONTINUED) != 0;
-        accum += ((digit & MASK) as u64) << shift;
+        let digit_value = match ((digit & MASK) as u64).checked_shl(shift as u32) {
+            Some(v) => v,
+            None => { return Err(Error::Overflow); }
+        };
+        accum += digit_value;
+        if accum > i64::max_value() as u64 {
+            return Err(Error::Overflow);
+        }
         shift += SHIFT;
     }
 

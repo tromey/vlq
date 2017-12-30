@@ -1,6 +1,6 @@
 extern crate vlq;
 
-use vlq::{decode, encode};
+use vlq::{decode, encode, Error};
 
 fn decode_tester_ok(input: &[u8], expect: i64) {
     let mut input = input.iter().cloned();
@@ -33,3 +33,20 @@ fn test_roundtrip() {
     }
 }
 
+#[test]
+fn test_wrapping() {
+    let inputs = &[
+        &b"////////////////////////////A"[..],
+        &b"////////////P"[..],
+        ];
+
+    for input in inputs {
+        match decode(&mut input.iter().cloned()) {
+            Err(Error::Overflow) => {},
+            Ok(val) => {
+                println!("WHAT?? {} {:x}", val, i64::max_value());
+            },
+            _ => assert!(false),
+        }
+    }
+}
