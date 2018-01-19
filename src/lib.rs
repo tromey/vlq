@@ -8,6 +8,7 @@
 #![deny(missing_debug_implementations)]
 
 use std::io;
+use std::i64;
 
 // Some constants defined by the spec.
 const SHIFT: u8 = 5;
@@ -41,36 +42,46 @@ fn decode64(input: u8) -> Result<u8> {
 }
 
 /// Decode a single VLQ value from the input, returning the value.
+///
+/// # Range
+///
+/// Supports all numbers that can be represented by a sign bit and a 63 bit
+/// absolute value: `[-(2^63 - 1), 2^63 - 1]`.
+///
+/// Note that `i64::MIN = -(2^63)` cannot be represented in that form, and this
+/// function will return `Error::Overflowed` when attempting to decode it.
 pub fn decode<B>(input: &mut B) -> Result<i64>
 where
     B: Iterator<Item = u8>,
 {
-    let mut accum = 0;
+    let mut accum: u64 = 0;
     let mut shift = 0;
+
     let mut keep_going = true;
     while keep_going {
         let byte = input.next().ok_or(Error::UnexpectedEof)?;
         let digit = decode64(byte)?;
         keep_going = (digit & CONTINUED) != 0;
-        let digit_value = match ((digit & MASK) as u64).checked_shl(shift as u32) {
-            Some(v) => v,
-            None => { return Err(Error::Overflow); }
-        };
-        accum += digit_value;
-        if accum > i64::max_value() as u64 {
-            return Err(Error::Overflow);
-        }
+
+        let digit_value = ((digit & MASK) as u64)
+            .checked_shl(shift as u32)
+            .ok_or(Error::Overflow)?;
+
+        accum = accum.checked_add(digit_value).ok_or(Error::Overflow)?;
         shift += SHIFT;
     }
 
-    // The low bit holds the sign.
-    let negate = (accum & 1) != 0;
-    accum >>= 1;
-    if negate {
-        accum = accum.wrapping_neg();
+    let abs_value = accum / 2;
+    if abs_value > (i64::MAX as u64) {
+        return Err(Error::Overflow);
     }
 
-    Ok(accum as i64)
+    // The low bit holds the sign.
+    if (accum & 1) != 0 {
+        Ok(-(abs_value as i64))
+    } else {
+        Ok(abs_value as i64)
+    }
 }
 
 // Encode a single base64 digit.
@@ -98,6 +109,11 @@ where
     let signed = value < 0;
     let mut value = (value.wrapping_abs() as u64) << 1;
     if signed {
+        if value == 0 {
+            // Wrapped.
+            value = (i64::MAX as u64) + 1;
+        }
+
         value |= 1;
     }
     loop {
