@@ -2,6 +2,7 @@
 extern crate quickcheck;
 extern crate vlq;
 
+use std::i64;
 use vlq::{decode, encode};
 
 // Encode a single base64 digit.
@@ -30,6 +31,11 @@ quickcheck! {
     }
 
     fn roundtrip(x: i64) -> bool {
+        // The single `i64` value that we cannot round trip.
+        if x == i64::MIN {
+            return true;
+        }
+
         let mut buf = vec![];
         encode(x, &mut buf).unwrap();
         decode(&mut buf.iter().cloned()).unwrap() == x
