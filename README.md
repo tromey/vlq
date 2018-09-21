@@ -1,6 +1,6 @@
 # `vlq`
 
-[![](https://docs.rs/vlq/badge.svg)](https://docs.rs/vlq/) [![](https://img.shields.io/crates/v/vlq.svg)](https://crates.io/crates/vlq) [![](https://img.shields.io/crates/d/vlq.png)](https://crates.io/crates/vlq)
+[![](https://docs.rs/vlq/badge.svg)](https://docs.rs/vlq/) [![](https://img.shields.io/crates/v/vlq.svg)](https://crates.io/crates/vlq) [![](https://img.shields.io/crates/d/vlq.png)](https://crates.io/crates/vlq) [![Build Status](https://travis-ci.org/tromey/vlq.png?branch=master)](https://travis-ci.org/tromey/vlq)
 
 Encode and decode the Base64-encoded [VLQ](https://en.wikipedia.org/wiki/Variable-length_quantity)
 encoding.  Note that there are several variants of VLQ.  This only
