@@ -1,0 +1,22 @@
+language: rust
+cache: cargo
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  exclude:
+    - rust: stable
+      env: JOB="bench"
+    - rust: beta
+      env: JOB="bench"
+
+env:
+  matrix:
+    - JOB="test"
+    - JOB="bench"
+
+script:
+  - ./ci/script.sh
