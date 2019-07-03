@@ -7,12 +7,13 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 
-use std::io;
 use std::i64;
+use std::io;
 
 // Some constants defined by the spec.
 const SHIFT: u8 = 5;
 const MASK: u8 = (1 << SHIFT) - 1;
+const OVERFLOW_MASK: u8 = 1 << (SHIFT - 1);
 const CONTINUED: u8 = 1 << SHIFT;
 
 /// An error that occurred while decoding.
@@ -61,26 +62,33 @@ where
     while keep_going {
         let byte = input.next().ok_or(Error::UnexpectedEof)?;
         let digit = decode64(byte)?;
-        keep_going = (digit & CONTINUED) != 0;
 
-        let digit_value = ((digit & MASK) as u64)
-            .checked_shl(shift as u32)
-            .ok_or(Error::Overflow)?;
+        if shift > 60 {
+            // If we're shifting more than 60, overflow.
+            return Err(Error::Overflow);
+        } else if shift == 60 && (digit & OVERFLOW_MASK) != 0 {
+            // If the 5th bit is set on a 60 shift-left, overflow.
+            return Err(Error::Overflow);
+        }
 
-        accum = accum.checked_add(digit_value).ok_or(Error::Overflow)?;
+        let digit_value = ((digit & MASK) as u64) << shift;
+        accum |= digit_value;
         shift += SHIFT;
-    }
-
-    let abs_value = accum / 2;
-    if abs_value > (i64::MAX as u64) {
-        return Err(Error::Overflow);
+        keep_going = (digit & CONTINUED) != 0;
     }
 
     // The low bit holds the sign.
-    if (accum & 1) != 0 {
-        Ok(-(abs_value as i64))
+    let negate = (accum & 1) != 0;
+    accum >>= 1;
+
+    if negate {
+        if accum == 0 {
+            Ok(i64::MIN)
+        } else {
+            Ok(-(accum as i64))
+        }
     } else {
-        Ok(abs_value as i64)
+        Ok(accum as i64)
     }
 }
 
@@ -96,7 +104,7 @@ fn encode64(value: u8) -> u8 {
     } else if value == 62 {
         b'+'
     } else {
-        assert!(value == 63);
+        debug_assert_eq!(value, 63);
         b'/'
     }
 }
@@ -107,13 +115,12 @@ where
     W: io::Write,
 {
     let signed = value < 0;
-    let mut value = (value.wrapping_abs() as u64) << 1;
+    let mut value = if value == i64::MIN {
+        0
+    } else {
+        (value.wrapping_abs() as u64) << 1
+    };
     if signed {
-        if value == 0 {
-            // Wrapped.
-            value = (i64::MAX as u64) + 1;
-        }
-
         value |= 1;
     }
     loop {
