@@ -30,6 +30,7 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 // Decode a single base64 digit.
+#[allow(ellipsis_inclusive_range_patterns)]
 fn decode64(input: u8) -> Result<u8> {
     match input {
         b'A'...b'Z' => Ok(input - b'A'),
