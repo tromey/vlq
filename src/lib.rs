@@ -32,9 +32,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 // Decode a single base64 digit.
 fn decode64(input: u8) -> Result<u8> {
     match input {
-        b'A'...b'Z' => Ok(input - b'A'),
-        b'a'...b'z' => Ok(input - b'a' + 26),
-        b'0'...b'9' => Ok(input - b'0' + 52),
+        b'A'..=b'Z' => Ok(input - b'A'),
+        b'a'..=b'z' => Ok(input - b'a' + 26),
+        b'0'..=b'9' => Ok(input - b'0' + 52),
         b'+' => Ok(62),
         b'/' => Ok(63),
         _ => Err(Error::InvalidBase64(input)),
