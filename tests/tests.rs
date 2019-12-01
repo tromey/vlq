@@ -19,7 +19,7 @@ fn decode_tester_ok(input: &[u8], expect: i64) {
 #[test]
 fn test_decode() {
     decode_tester_ok("A".as_bytes(), 0);
-    decode_tester_ok("B".as_bytes(), 0);
+    decode_tester_ok("B".as_bytes(), i64::MIN);
     decode_tester_ok("C".as_bytes(), 1);
     decode_tester_ok("D".as_bytes(), -1);
 }
@@ -38,7 +38,7 @@ fn roundtrip_ok(val: i64) {
 
 #[test]
 fn test_roundtrip_mids() {
-    for val in -512..513 {
+    for val in -512..=512 {
         roundtrip_ok(val);
         roundtrip_ok(u32::MAX as i64 + val);
         roundtrip_ok(-(u32::MAX as i64) + val);
@@ -47,36 +47,33 @@ fn test_roundtrip_mids() {
 
 #[test]
 fn test_roundtrip_mins() {
-    for val in i64::MIN + 1..i64::MIN + 1024 {
+    for val in i64::MIN..=i64::MIN + 1024 {
         roundtrip_ok(val);
     }
 }
 
 #[test]
 fn test_roundtrip_maxs() {
-    for val in i64::MAX - 1024..i64::MAX {
+    for val in i64::MAX - 1024..=i64::MAX {
         roundtrip_ok(val);
     }
-    roundtrip_ok(i64::MAX);
 }
 
 #[test]
 fn test_wrapping() {
     let inputs = &[
-        // `i64::MIN`
-        &b"hgggggggggggI"[..],
-
+        // Causes a (0b10000 << 60), which overflows
+        &b"ggggggggggggQ"[..],
+        // Causes a (u64 << 65), which overflows
+        &b"gggggggggggggA"[..],
+        // Plainly, too long.
         &b"////////////////////////////A"[..],
-        &b"////////////P"[..],
     ];
 
     for input in inputs {
         match decode(&mut input.iter().cloned()) {
-            Err(Error::Overflow) => {},
-            Ok(val) => {
-                println!("WHAT?? {} {:x}", val, i64::max_value());
-            },
-            _ => assert!(false),
+            Err(Error::Overflow) => {}
+            _ => panic!("{}", String::from_utf8_lossy(input)),
         }
     }
 }

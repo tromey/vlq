@@ -51,7 +51,7 @@ fn main() {
                     println!("   orig column {}", orig_column);
 
                     match decode(input.by_ref()) {
-                        Err(_) => {},
+                        Err(_) => {}
                         Ok(n) => {
                             name_number += n;
                             println!("   name #{}", name_number);
